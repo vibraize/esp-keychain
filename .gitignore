@@ -1,0 +1,23 @@
+# Arduino IDE / arduino-cli build output
+build/
+*.bin
+*.elf
+*.map
+*.hex
+*.o
+*.a
+.arduino/
+esp_keychain/build/
+esp_keychain/debug.cfg
+esp_keychain/debug_custom.json
+esp_keychain/*.svd
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
