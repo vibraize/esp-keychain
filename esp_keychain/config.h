@@ -25,11 +25,12 @@
 #define SIMULATE_RSSI 0        // 1 = radio off, RSSI comes from Serial input (see README)
 
 // ---------------------------------------------------------------------------
-// Pins (avoid strapping pins GPIO2, GPIO8, GPIO9)
+// Pins: Seeed XIAO ESP32C3. GPIO numbers, silkscreen label in comments.
+// Avoid strapping pins D0 (GPIO2), D8 (GPIO8), D9 (GPIO9).
 // ---------------------------------------------------------------------------
-#define PIN_SDA 6
-#define PIN_SCL 7
-#define PIN_LED_DATA 4
+#define PIN_SDA 6              // D4
+#define PIN_SCL 7              // D5
+#define PIN_LED_DATA 4         // D2
 
 // ---------------------------------------------------------------------------
 // OLED (SSD1306 128x32)
