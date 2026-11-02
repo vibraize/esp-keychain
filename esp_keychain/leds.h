@@ -1,4 +1,4 @@
-// leds.h - WS2812B effects keyed to the proximity zone.
+// leds.h - addressable LED effects keyed to the proximity zone.
 #pragma once
 
 #include <Arduino.h>

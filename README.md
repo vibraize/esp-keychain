@@ -12,7 +12,7 @@ esp_keychain/            Arduino sketch folder (name matches the .ino)
   config.h               DEVICE_ID, pins, thresholds, timings, modes
   proximity.h/.cpp       ESP-NOW beacons, RSSI filter, zones, clock sync, RSSI simulator
   display_anim.h/.cpp    OLED state machine and drawing
-  leds.h/.cpp            WS2812B effects
+  leds.h/.cpp            addressable LED effects (PL9823)
   themes.h               per-device sprites, palettes, text
 tools/png2xbm.py         convert PNG frames to sprite arrays for themes.h
 ```
@@ -23,7 +23,7 @@ tools/png2xbm.py         convert PNG frames to sprite arrays for themes.h
 |---|---|
 | DIYables ESP32-C3 SuperMini | No onboard charger. USB-C for programming. |
 | 0.91" 128x32 OLED, SSD1306, I2C | Address assumed 0x3C, confirmed by the boot I2C scan |
-| 3x BTF-LIGHTING WS2812B pixels | Chained DIN -> DOUT |
+| 3x PL9823-F5 5 mm through-hole addressable RGB LEDs (diffused) | Chained DIN -> DOUT, 100 nF cap at each |
 | 1S LiPo + USB-C charger module + 3 mm slide switch | See [Battery sizing](#battery-sizing) |
 
 ### Wiring
@@ -38,25 +38,26 @@ tools/png2xbm.py         convert PNG frames to sprite arrays for themes.h
 | OLED `GND` | `GND` | |
 | OLED `SDA` | `GPIO6` | |
 | OLED `SCL` | `GPIO7` | |
-| WS2812B #1 `VDD` / `5V` | Switched rail | Same node as the board 5V pin |
-| WS2812B #1 `GND` | `GND` | |
-| WS2812B #1 `DIN` | `GPIO4` | A 220 to 470 Ω series resistor is common practice |
-| WS2812B #1 `DOUT` -> #2 `DIN`, #2 `DOUT` -> #3 `DIN` | | VDD/GND of all three on the switched rail / GND |
+| PL9823 #1 `VDD` | Switched rail | Same node as the board 5V pin |
+| PL9823 #1 `GND` | `GND` | |
+| PL9823 #1 `DIN` | `GPIO4` | A 220 to 470 Ω series resistor is common practice |
+| PL9823 #1 `DOUT` -> #2 `DIN`, #2 `DOUT` -> #3 `DIN` | | VDD/GND of all three on the switched rail / GND |
+| 100 nF ceramic cap | Across `VDD`-`GND` at each PL9823 | Keep it right at the legs |
 
 Notes:
-- Running the LEDs from the battery rail keeps 3.3 V data inside the WS2812B logic-high spec (0.7 x VDD is at most ~2.9 V at 4.2 V).
+- Running the LEDs from the battery rail keeps 3.3 V data inside the usual WS281x-family logic-high spec of 0.7 x VDD (at most ~2.9 V at 4.2 V). Confirm against the PL9823 datasheet.
 - Feeding a LiPo into the `5V` pin means the board's regulator drops it to 3.3 V. Near empty the 3.3 V rail may sag and the chip can brown out. I have not checked which regulator the DIYables board uses.
 - **USB + battery at the same time:** on many SuperMini boards USB VBUS and the `5V` pin are connected, sometimes through a diode, sometimes not. Until you've confirmed a diode on your board, **switch the battery off before plugging in USB** so USB 5 V can't backfeed into the charger output.
-- A ~100 µF cap across the LED supply is common WS2812B advice. Check whether the BTF pixel boards already carry one.
+- PL9823 leg order: check the datasheet or seller drawing before soldering. Don't go by leg length alone.
+- A ~100 µF cap across the LED supply near LED #1 is common addressable-LED advice, on top of the 100 nF per LED.
 
-### Through-hole addressable LED option
+### Other through-hole addressable LEDs
 
-5 mm through-hole addressable LEDs work with the same firmware and are easier to place on perfboard than SMD pixels:
+The firmware defaults to the PL9823-F5. **WS2812D-F5** and **APA106-F5** (or the 8 mm F8 versions) should also work:
 
-- **PL9823-F5**, **WS2812D-F5** or **APA106-F5** (the F8 versions are 8 mm).
 - Each has 4 legs: DIN, VDD, GND, DOUT. The leg order differs between parts and sellers, so check the datasheet for the exact part you buy.
 - Unlike pixel boards, these have no built-in capacitor. Put a 100 nF ceramic cap from VDD to GND right at each LED.
-- Color order is usually RGB. Set `LED_PIXEL_TYPE` in `config.h` to `(NEO_RGB + NEO_KHZ800)` and check the boot color matches the theme's primary color.
+- Color order varies. `LED_PIXEL_TYPE` defaults to `(NEO_RGB + NEO_KHZ800)`; if the boot color doesn't match the theme's primary color, try `NEO_GRB`. Flat SMD WS2812B pixels use `NEO_GRB`.
 - Check the part's minimum VDD in its datasheet. A LiPo sags to ~3.3 V near empty, so colors may shift or blue may drop out before the board browns out.
 - Diffused lenses look softer and more even than clear ones.
 
@@ -72,7 +73,7 @@ Notes:
 | Library Manager name | Author | Minimum version | Why |
 |---|---|---|---|
 | U8g2 | oliver | 2.34.x | SSD1306 128x32 driver, full-buffer mode |
-| Adafruit NeoPixel | Adafruit | 1.12.0 | WS2812B. 1.12.0 is the first release with arduino-esp32 3.x support as far as I know |
+| Adafruit NeoPixel | Adafruit | 1.12.0 | PL9823 / WS281x-family LEDs. 1.12.0 is the first release with arduino-esp32 3.x support as far as I know |
 
 The minimum versions are from memory and I couldn't check the current releases from here. **TODO:** once you install, write the exact versions you used in this table so you can rebuild the same thing later.
 
@@ -139,7 +140,7 @@ The ESP-NOW receiver is on continuously, which dominates current draw. Rough est
 |---|---|
 | ESP32-C3 with WiFi RX always on | on the order of 80 mA (Espressif datasheet RX figures) |
 | OLED 128x32 | a few mA up to ~20 mA depending on lit pixels, ~0 when off |
-| 3x WS2812B at `LED_MAX_BRIGHTNESS 40` | ~1 mA each idle, up to ~10 to 15 mA total while animating |
+| 3x PL9823 at `LED_MAX_BRIGHTNESS 40` | ~1 mA each idle, up to ~10 to 15 mA total while animating |
 
 Call it ~90 to 110 mA while active. Runtime ≈ capacity x 0.8 / current:
 
