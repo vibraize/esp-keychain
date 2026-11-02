@@ -49,6 +49,17 @@ Notes:
 - **USB + battery at the same time:** on many SuperMini boards USB VBUS and the `5V` pin are connected, sometimes through a diode, sometimes not. Until you've confirmed a diode on your board, **switch the battery off before plugging in USB** so USB 5 V can't backfeed into the charger output.
 - A ~100 µF cap across the LED supply is common WS2812B advice. Check whether the BTF pixel boards already carry one.
 
+### Through-hole addressable LED option
+
+5 mm through-hole addressable LEDs work with the same firmware and are easier to place on perfboard than SMD pixels:
+
+- **PL9823-F5**, **WS2812D-F5** or **APA106-F5** (the F8 versions are 8 mm).
+- Each has 4 legs: DIN, VDD, GND, DOUT. The leg order differs between parts and sellers, so check the datasheet for the exact part you buy.
+- Unlike pixel boards, these have no built-in capacitor. Put a 100 nF ceramic cap from VDD to GND right at each LED.
+- Color order is usually RGB. Set `LED_PIXEL_TYPE` in `config.h` to `(NEO_RGB + NEO_KHZ800)` and check the boot color matches the theme's primary color.
+- Check the part's minimum VDD in its datasheet. A LiPo sags to ~3.3 V near empty, so colors may shift or blue may drop out before the board browns out.
+- Diffused lenses look softer and more even than clear ones.
+
 ## Toolchain
 
 - Arduino IDE 2.x

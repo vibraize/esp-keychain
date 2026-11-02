@@ -47,6 +47,10 @@
 // LEDs (3x WS2812B, chained DIN->DOUT from PIN_LED_DATA)
 // ---------------------------------------------------------------------------
 #define LED_COUNT 3
+// Color order + speed for Adafruit_NeoPixel. WS2812B SMD pixels: NEO_GRB.
+// Through-hole PL9823 / APA106 are usually NEO_RGB. If red and green look
+// swapped at boot, change this.
+#define LED_PIXEL_TYPE (NEO_GRB + NEO_KHZ800)
 #define LED_MAX_BRIGHTNESS 40  // hard cap, 0-255. Big impact on battery life.
 #define LED_FRAME_MS 20
 #define LED_CHASE_MODE 1       // 0 = wrap (loop/triangle layout), 1 = ping-pong (row layout)

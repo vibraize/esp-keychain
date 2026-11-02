@@ -8,7 +8,7 @@
 namespace leds {
 namespace {
 
-Adafruit_NeoPixel strip(LED_COUNT, PIN_LED_DATA, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip(LED_COUNT, PIN_LED_DATA, LED_PIXEL_TYPE);
 
 const Theme& self = THEMES[SELF_THEME_INDEX];
 const Theme& peer = THEMES[PEER_THEME_INDEX];
